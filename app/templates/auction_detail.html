@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ auction.season }} Auction - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{{ auction.season }} Auction</h2>
+                    <p class="card-text">
+                        <strong>Date:</strong> {{ auction.auction_date.strftime('%B %d, %Y') }}<br>
+                        <strong>Status:</strong> {{ auction.status }}<br>
+                        <strong>Total Lots:</strong> {{ lots|length }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <h3>Auction Lots</h3>
+            {% if lots %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Base Price</th>
+                            <th>Sold Price</th>
+                            <th>Team</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lot in lots %}
+                        <tr>
+                            <td>{{ lot.player.name }}</td>
+                            <td>₹{{ lot.base_price }}</td>
+                            <td>₹{{ lot.sold_price if lot.sold_price else 'Not Sold' }}</td>
+                            <td>{{ lot.team.name if lot.team else 'Unsold' }}</td>
+                            <td>{{ lot.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No lots found for this auction.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

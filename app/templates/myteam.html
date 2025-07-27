@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}My Teams{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>My Teams</h1>
+        <a href="{{ url_for('main_bp.create_team') }}" class="btn btn-primary">Create New Team</a>
+    </div>
+
+    <div class="teams-grid">
+        {% for team in teams %}
+        <div class="team-card">
+            <div class="team-header">
+                <h2>{{ team.name }}</h2>
+                <div class="team-actions">
+                    <a href="{{ url_for('main_bp.user_team_detail', team_id=team.id) }}" class="btn btn-primary">View Team</a>
+                    <a href="{{ url_for('main_bp.add_player', team_id=team.id) }}" class="btn btn-secondary">Add Player</a>
+                    <form action="{{ url_for('main_bp.delete_team', team_id=team.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this team?')">Delete Team</button>
+                    </form>
+                </div>
+            </div>
+            <div class="team-stats">
+                <div class="stat">
+                    <span class="stat-label">Players</span>
+                    <span class="stat-value">{{ team.players|length }}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Created</span>
+                    <span class="stat-value">{{ team.created_at.strftime('%Y-%m-%d') }}</span>
+                </div>
+            </div>
+            <div class="team-players">
+                <h3>Players</h3>
+                {% if team.players %}
+                <ul class="player-list">
+                    {% for player in team.players %}
+                    <li>{{ player.name }} ({{ player.role }})</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="no-players">No players in this team yet</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.team-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.team-header {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    gap:10px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.team-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.team-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.team-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #212529;
+}
+
+.team-players {
+    margin-top: 15px;
+}
+
+.team-players h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.player-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.player-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.player-list li:last-child {
+    border-bottom: none;
+}
+
+.no-players {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}

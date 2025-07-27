@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Matches - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Matches</h1>
+    <div class="row">
+        {% if matches %}
+            {% for match in matches %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ match.team1 }} vs {{ match.team2 }}</h5>
+                        <p class="card-text">
+                            <strong>Date:</strong> {{ match.date }}<br>
+                            <strong>Venue:</strong> {{ match.venue }}<br>
+                            <strong>Result:</strong> {{ match.result }}<br>
+                            <strong>Man of the Match:</strong> {{ match.mom }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">No matches found.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

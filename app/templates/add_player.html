@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Add Player - {{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>Add Player to {{ team.name }}</h1>
+        <a href="{{ url_for('main_bp.user_team_detail', team_id=team.id) }}" class="btn btn-secondary">Back to Team</a>
+    </div>
+
+    <div class="players-grid">
+        {% for player in available_players %}
+        <div class="player-card">
+            <div class="player-info">
+                <h3>{{ player.name }}</h3>
+                <p class="role">{{ player.role }}</p>
+                <p class="nationality">{{ player.nationality }}</p>
+            </div>
+            <div class="player-stats">
+                {% if player.batting_average is defined %}
+                    <p>Batting Avg: {{ player.batting_average|round(2) }}</p>
+                {% endif %}
+                {% if player.bowling_average is defined %}
+                    <p>Bowling Avg: {{ player.bowling_average|round(2) }}</p>
+                {% endif %}
+            </div>
+            <form action="{{ url_for('main_bp.add_player', team_id=team.id) }}" method="POST" class="add-player-form">
+                <input type="hidden" name="player_id" value="{{ player.id }}">
+                <button type="submit" class="btn btn-primary">Add to Team</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.player-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.player-info h3 {
+    margin: 0 0 10px;
+}
+
+.role, .nationality {
+    color: #6c757d;
+    margin: 5px 0;
+}
+
+.player-stats {
+    margin: 15px 0;
+}
+
+.player-stats p {
+    margin: 5px 0;
+}
+
+.add-player-form {
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
+{% endblock %} 

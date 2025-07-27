@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Players - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="players-container">
+    <h1>Players</h1>
+    
+    <!-- Filters -->
+    <div class="filters">
+        <form method="GET" class="filter-form">
+            <div class="form-group">
+                <label for="role">Role:</label>
+                <select name="role" id="role">
+                    <option value="">All Roles</option>
+                    <option value="batsman" {% if request.args.get('role') == 'batsman' %}selected{% endif %}>Batsman</option>
+                    <option value="bowler" {% if request.args.get('role') == 'bowler' %}selected{% endif %}>Bowler</option>
+                    <option value="all-rounder" {% if request.args.get('role') == 'all-rounder' %}selected{% endif %}>All-Rounder</option>
+                    <option value="wicket-keeper" {% if request.args.get('role') == 'wicket-keeper' %}selected{% endif %}>Wicket Keeper</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nationality">Nationality:</label>
+                <select name="nationality" id="nationality">
+                    <option value="">All Nationalities</option>
+                    <option value="Indian" {% if request.args.get('nationality') == 'Indian' %}selected{% endif %}>Indian</option>
+                    <option value="Overseas" {% if request.args.get('nationality') == 'Overseas' %}selected{% endif %}>Overseas</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Apply Filters</button>
+        </form>
+    </div>
+
+    <!-- Players Grid -->
+    <div class="players-grid">
+        {% for player in players %}
+        <div class="player-card">
+            <div class="player-header">
+                <h2>{{ player.name }}</h2>
+                <span class="team-badge">{{ player.team.name if player.team else 'Free Agent' }}</span>
+            </div>
+            <div class="player-details">
+                <div class="detail-row">
+                    <span class="label">Role:</span>
+                    <span class="value">{{ player.role|title }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Nationality:</span>
+                    <span class="value">{{ player.nationality }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Matches:</span>
+                    <span class="value">{{ player.matches_played }}</span>
+                </div>
+                {% if player.batting_average %}
+                <div class="detail-row">
+                    <span class="label">Batting Avg:</span>
+                    <span class="value">{{ "%.2f"|format(player.batting_average) }}</span>
+                </div>
+                {% endif %}
+                {% if player.bowling_average %}
+                <div class="detail-row">
+                    <span class="label">Bowling Avg:</span>
+                    <span class="value">{{ "%.2f"|format(player.bowling_average) }}</span>
+                </div>
+                {% endif %}
+                {% if player.market_value %}
+                <div class="detail-row">
+                    <span class="label">Market Value:</span>
+                    <span class="value">₹{{ "%.2f"|format(player.market_value) }} Cr</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="player-actions">
+                <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="btn">View Details</a>
+                <a href="{{ url_for('main_bp.compare', player1=player.id) }}" class="btn">Compare</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.players-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.filters {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group select {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background: white;
+}
+
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.player-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.player-card:hover {
+    transform: translateY(-5px);
+}
+
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.player-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.team-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+}
+
+.player-details {
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.label {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.value {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.player-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:first-child {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn:last-child {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .players-container {
+        padding: 1rem;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+    }
+    
+    .form-group {
+        width: 100%;
+    }
+    
+    .players-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Search Results for "{{ query }}"</h2>
+    
+    {% if teams or players or matches %}
+        {% if teams %}
+        <div class="mt-4">
+            <h3>Teams</h3>
+            <div class="row">
+                {% for team in teams %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ team.logo_url }}" class="card-img-top" alt="{{ team.name }}" style="height: 200px; object-fit: contain;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ team.name }}</h5>
+                            <p class="card-text">
+                                <strong>Short Name:</strong> {{ team.short_name }}<br>
+                                <strong>Home Ground:</strong> {{ team.home_ground }}
+                            </p>
+                            <a href="{{ url_for('main_bp.team_detail', team_id=team.id) }}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if players %}
+        <div class="mt-4">
+            <h3>Players</h3>
+            <div class="row">
+                {% for player in players %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ player.name }}</h5>
+                            <p class="card-text">
+                                <strong>Team:</strong> {{ player.team.name }}<br>
+                                <strong>Role:</strong> {{ player.role }}<br>
+                                <strong>Nationality:</strong> {{ player.nationality }}
+                            </p>
+                            <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if matches %}
+        <div class="mt-4">
+            <h3>Matches</h3>
+            <div class="row">
+                {% for match in matches %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ match.team1.name }} vs {{ match.team2.name }}</h5>
+                            <p class="card-text">
+                                <strong>Date:</strong> {{ match.date.strftime('%Y-%m-%d') }}<br>
+                                <strong>Venue:</strong> {{ match.venue }}<br>
+                                <strong>Result:</strong> {{ match.result }}
+                            </p>
+                            <a href="{{ url_for('main_bp.match_detail', match_id=match.id) }}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info mt-4">
+            No results found for "{{ query }}". Please try a different search term.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,497 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>IPL Analytics Dashboard</h1>
+    
+    <!-- Overview Section -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Matches</h3>
+            <p class="stat-value">{{ basic_stats.total_matches }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Runs</h3>
+            <p class="stat-value">{{ basic_stats.total_runs }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Wickets</h3>
+            <p class="stat-value">{{ basic_stats.total_wickets }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Avg Runs/Match</h3>
+            <p class="stat-value">{{ "%.2f"|format(basic_stats.avg_runs_per_match) }}</p>
+        </div>
+    </div>
+
+    <!-- Team Performance Section -->
+    <div class="section">
+        <h2>Team Performance</h2>
+        <div class="chart-container">
+            <canvas id="teamPerformanceChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Key Insights</h3>
+            <ul>
+                <li>Highest Win Percentage: {{ team_stats.win_percentages|max }}%</li>
+                <li>Most Wins: {{ team_stats.wins|max }}</li>
+                <li>Most Consistent Team: {{ team_stats.names[team_stats.win_percentages|index(team_stats.win_percentages|max)] }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Match Outcomes Section -->
+    <div class="section">
+        <h2>Match Outcomes</h2>
+        <div class="chart-container">
+            <canvas id="matchOutcomesChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Key Insights</h3>
+            <ul>
+                <li>Batting Wins: {{ match_outcomes.batting_wins }} ({{ "%.1f"|format(match_outcomes.batting_wins / basic_stats.total_matches * 100) }}%)</li>
+                <li>Bowling Wins: {{ match_outcomes.bowling_wins }} ({{ "%.1f"|format(match_outcomes.bowling_wins / basic_stats.total_matches * 100) }}%)</li>
+                <li>Toss Win Impact: {{ "%.1f"|format(match_outcomes.toss_win_percentage) }}% of matches won by toss winners</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Batting Statistics Section -->
+    <div class="section">
+        <h2>Batting Statistics</h2>
+        <div class="chart-container">
+            <canvas id="battingChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Top Batsmen</h3>
+            <ul>
+                {% for player, runs, matches, avg, balls, fours, sixes in batting_stats.top_batsmen %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ runs }} runs ({{ "%.2f"|format(avg) }} avg)
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>Best Strike Rates</h3>
+            <ul>
+                {% for player, runs, balls, matches in batting_stats.best_strike_rates %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ "%.2f"|format(runs * 100.0 / balls) }} SR
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>Most Boundaries</h3>
+            <ul>
+                {% for player, boundaries, runs in batting_stats.most_boundaries %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ boundaries }} boundaries ({{ "%.1f"|format(boundaries * 100.0 / runs) }}% of runs)
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Bowling Statistics Section -->
+    <div class="section">
+        <h2>Bowling Statistics</h2>
+        <div class="chart-container">
+            <canvas id="bowlingChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Top Bowlers</h3>
+            <ul>
+                {% for player, wickets, runs, overs, wpm in bowling_stats.top_bowlers %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ wickets }} wickets ({{ "%.2f"|format(runs / wickets) }} avg)
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>Best Economy Rates</h3>
+            <ul>
+                {% for player, runs, overs, matches in bowling_stats.best_economy %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ "%.2f"|format(runs / overs) }} economy
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>Most Maidens</h3>
+            <ul>
+                {% for player, maidens, overs in bowling_stats.most_maidens %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ maidens }} maidens ({{ "%.1f"|format(maidens * 100.0 / overs) }}% of overs)
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Fielding Statistics Section -->
+    <div class="section">
+        <h2>Fielding Statistics</h2>
+        <div class="chart-container">
+            <canvas id="fieldingChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Top Fielders</h3>
+            <ul>
+                {% for player, catches, stumpings, matches in fielding_stats.top_fielders %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ catches + stumpings }} dismissals ({{ catches }} catches, {{ stumpings }} stumpings)
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Player Value Analysis Section -->
+    <div class="section">
+        <h2>Player Value Analysis</h2>
+        <div class="chart-container">
+            <canvas id="valueChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Highest Auction Values</h3>
+            <ul>
+                {% for player, value in value_stats.highest_values %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: ₹{{ "%.2f"|format(value) }} Cr
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>Best Value Players</h3>
+            <ul>
+                {% for player, runs, wickets, value in value_stats.best_value_players %}
+                <li>
+                    <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="player-link">
+                        {{ player.name }}: {{ runs + wickets * 20 }} impact points (₹{{ "%.2f"|format(value) }} Cr)
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Venue Analysis Section -->
+    <div class="section">
+        <h2>Venue Analysis</h2>
+        <div class="chart-container">
+            <canvas id="venueChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Highest Scoring Venues</h3>
+            <ul>
+                {% for venue, total_runs in venue_stats.highest_scores %}
+                <li>{{ venue }}: {{ total_runs }} runs</li>
+                {% endfor %}
+            </ul>
+            <h3>Most Popular Venues</h3>
+            <ul>
+                {% for venue, matches in venue_stats.most_matches %}
+                <li>{{ venue }}: {{ matches }} matches</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Match Type Analysis Section -->
+    <div class="section">
+        <h2>Match Type Analysis</h2>
+        <div class="chart-container">
+            <canvas id="matchTypeChart"></canvas>
+        </div>
+        <div class="insights">
+            <h3>Match Distribution</h3>
+            <ul>
+                <li>Day Matches: {{ match_type_stats.day_matches }} ({{ "%.1f"|format(match_type_stats.day_matches * 100.0 / basic_stats.total_matches) }}%)</li>
+                <li>Night Matches: {{ match_type_stats.night_matches }} ({{ "%.1f"|format(match_type_stats.night_matches * 100.0 / basic_stats.total_matches) }}%)</li>
+                <li>Day/Night Matches: {{ match_type_stats.day_night_matches }} ({{ "%.1f"|format(match_type_stats.day_night_matches * 100.0 / basic_stats.total_matches) }}%)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.player-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.player-link:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+.section {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+    margin: 2rem 0;
+    height: 400px;
+}
+
+.insights {
+    margin-top: 2rem;
+}
+
+.insights h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.insights ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.insights li {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: var(--background-color);
+    border-radius: 0.5rem;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Team Performance Chart
+const teamPerformanceCtx = document.getElementById('teamPerformanceChart').getContext('2d');
+new Chart(teamPerformanceCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ team_stats.names|tojson }},
+        datasets: [{
+            label: 'Wins',
+            data: {{ team_stats.wins|tojson }},
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Losses',
+            data: {{ team_stats.losses|tojson }},
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Match Outcomes Chart
+const matchOutcomesCtx = document.getElementById('matchOutcomesChart').getContext('2d');
+new Chart(matchOutcomesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Batting Wins', 'Bowling Wins', 'No Results'],
+        datasets: [{
+            data: [
+                {{ match_outcomes.batting_wins }},
+                {{ match_outcomes.bowling_wins }},
+                {{ match_outcomes.no_results }}
+            ],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(255, 206, 86, 0.2)'
+            ],
+            borderColor: [
+                'rgba(75, 192, 192, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(255, 206, 86, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+// Batting Chart
+const battingCtx = document.getElementById('battingChart').getContext('2d');
+new Chart(battingCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ batting_stats.top_batsmen|map(attribute='0.name')|list|tojson }},
+        datasets: [{
+            label: 'Runs',
+            data: {{ batting_stats.top_batsmen|map(attribute='1')|list|tojson }},
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Bowling Chart
+const bowlingCtx = document.getElementById('bowlingChart').getContext('2d');
+new Chart(bowlingCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ bowling_stats.top_bowlers|map(attribute='0.name')|list|tojson }},
+        datasets: [{
+            label: 'Wickets',
+            data: {{ bowling_stats.top_bowlers|map(attribute='1')|list|tojson }},
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Fielding Chart
+const fieldingCtx = document.getElementById('fieldingChart').getContext('2d');
+new Chart(fieldingCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ fielding_stats.top_fielders|map(attribute='0.name')|list|tojson }},
+        datasets: [{
+            label: 'Dismissals',
+            data: {{ fielding_stats.top_fielders|map(attribute=lambda x: x[1] + x[2])|list|tojson }},
+            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+            borderColor: 'rgba(255, 206, 86, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Value Chart
+const valueCtx = document.getElementById('valueChart').getContext('2d');
+new Chart(valueCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ value_stats.highest_values|map(attribute='0.name')|list|tojson }},
+        datasets: [{
+            label: 'Auction Value (Cr)',
+            data: {{ value_stats.highest_values|map(attribute='1')|list|tojson }},
+            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Venue Chart
+const venueCtx = document.getElementById('venueChart').getContext('2d');
+new Chart(venueCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ venue_stats.highest_scores|map(attribute='0')|list|tojson }},
+        datasets: [{
+            label: 'Total Runs',
+            data: {{ venue_stats.highest_scores|map(attribute='1')|list|tojson }},
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Match Type Chart
+const matchTypeCtx = document.getElementById('matchTypeChart').getContext('2d');
+new Chart(matchTypeCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Day', 'Night', 'Day/Night'],
+        datasets: [{
+            data: [
+                {{ match_type_stats.day_matches }},
+                {{ match_type_stats.night_matches }},
+                {{ match_type_stats.day_night_matches }}
+            ],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Teams - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">IPL Teams</h1>
+    
+    <div class="row">
+        {% for team in teams %}
+            <div class="col-md-4 mb-4">
+                <div class="card team-card h-100">
+                    <img src="{{ team.logo_url }}" class="card-img-top" alt="{{ team.name }}">
+                    <div class="team-overlay">
+                        <h5 class="card-title">{{ team.name }}</h5>
+                        <p class="card-text">{{ team.short_name }}</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col">
+                                <h6>Matches</h6>
+                                <p>{{ team.total_matches }}</p>
+                            </div>
+                            <div class="col">
+                                <h6>Wins</h6>
+                                <p>{{ team.wins }}</p>
+                            </div>
+                            <div class="col">
+                                <h6>Win %</h6>
+                                <p>{{ "%.1f"|format(team.win_percentage) }}%</p>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('main_bp.team_detail', team_id=team.id) }}" class="btn btn-primary btn-block mt-3">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p>No teams found.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Dashboard</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Recent Matches
+                </div>
+                <div class="card-body">
+                    {% if recent_matches %}
+                        <div class="list-group">
+                            {% for match in recent_matches %}
+                                <a href="{{ url_for('main_bp.match_detail', match_id=match.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ match.team1.name }} vs {{ match.team2.name }}</h6>
+                                        <small>{{ match.match_date.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ match.venue }}</p>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No recent matches found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Top Players
+                </div>
+                <div class="card-body">
+                    {% if top_players %}
+                        <div class="list-group">
+                            {% for player in top_players %}
+                                <a href="{{ url_for('main_bp.player_detail', player_id=player.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ player.name }}</h6>
+                                        <small>{{ player.role }}</small>
+                                    </div>
+                                    <p class="mb-1">
+                                        Batting Avg: {{ "%.2f"|format(player.batting_average) }} | 
+                                        Bowling Avg: {{ "%.2f"|format(player.bowling_average) }}
+                                    </p>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No top players found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

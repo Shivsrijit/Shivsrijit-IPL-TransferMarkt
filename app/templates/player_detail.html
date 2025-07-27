@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{{ player.name }} - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="player-detail-container">
+    <div class="player-header">
+        <div class="player-info">
+            <h1>{{ player.name }}</h1>
+            <p class="player-meta">
+                <span class="team">{{ player.team.name if player.team else 'Free Agent' }}</span> •
+                <span class="role">{{ player.role }}</span> •
+                <span class="nationality">{{ player.nationality }}</span>
+            </p>
+            {% if market_value %}
+            <div class="market-value">
+                <h3>Current Market Value</h3>
+                <p class="value">₹{{ "{:,.2f}".format(market_value) }} Cr</p>
+            </div>
+            {% endif %}
+        </div>
+        {% if current_user.is_authenticated and user_teams %}
+        <div class="add-to-team">
+            <form action="{{ url_for('main_bp.add_player_to_team', player_id=player.id) }}" method="POST">
+                <select name="team_id" class="form-control">
+                    <option value="">Select a team...</option>
+                    {% for team in user_teams %}
+                        <option value="{{ team.id }}">{{ team.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Add to Team</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Batting Average</h3>
+            <p class="stat-value">{{ batting_avg }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Bowling Average</h3>
+            <p class="stat-value">{{ bowling_avg }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Matches Played</h3>
+            <p class="stat-value">{{ match_dates|length }}</p>
+        </div>
+    </div>
+
+    <div class="performance-section">
+        <h2>Performance Trends</h2>
+        <div class="chart-container">
+            <canvas id="performanceTrendChart"></canvas>
+        </div>
+    </div>
+
+    <div class="comparison-section">
+        <h2>Comparison with Similar Players</h2>
+        <div class="chart-container">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+        <div class="similar-players">
+            <h3>Top Similar Players</h3>
+            <div class="players-grid">
+                {% for player in comparison_data.similar_players %}
+                <div class="player-card">
+                    <h4>{{ player.name }}</h4>
+                    <p>Runs: {{ player.runs }}</p>
+                    <p>Wickets: {{ player.wickets }}</p>
+                    <p>Matches: {{ player.matches }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-matches">
+        <h2>Recent Matches</h2>
+        <div class="matches-grid">
+            {% for perf in recent_performances %}
+            <div class="match-card">
+                <div class="match-header">
+                    <span class="date">{{ perf.match.match_date.strftime('%d %b %Y') }}</span>
+                    <span class="venue">{{ perf.match.venue }}</span>
+                </div>
+                <div class="match-teams">
+                    <span class="team">{{ perf.match.team1.name }}</span>
+                    <span>vs</span>
+                    <span class="team">{{ perf.match.team2.name }}</span>
+                </div>
+                <div class="player-performance">
+                    <p>Runs: {{ perf.runs_scored or 0 }}</p>
+                    <p>Wickets: {{ perf.wickets_taken or 0 }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Performance Trends Chart
+    const trendCtx = document.getElementById('performanceTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ trend_data.months|tojson }},
+            datasets: [{
+                label: 'Average Runs',
+                data: {{ trend_data.avg_runs|tojson }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }, {
+                label: 'Average Wickets',
+                data: {{ trend_data.avg_wickets|tojson }},
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Monthly Performance Trends'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Comparison Chart
+    const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+    const similarPlayers = {{ comparison_data.similar_players|tojson }};
+    
+    new Chart(comparisonCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Current Player', ...similarPlayers.map(p => p.name)],
+            datasets: [{
+                label: 'Batting Average',
+                data: [{{ batting_avg }}, ...similarPlayers.map(p => p.batting_avg)],
+                backgroundColor: 'rgba(75, 192, 192, 0.5)'
+            }, {
+                label: 'Bowling Average',
+                data: [{{ bowling_avg }}, ...similarPlayers.map(p => p.bowling_avg)],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Performance Comparison'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+.add-to-team {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.add-to-team form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.add-to-team .form-control {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.add-to-team .btn {
+    white-space: nowrap;
+}
+</style>
+{% endblock %} 

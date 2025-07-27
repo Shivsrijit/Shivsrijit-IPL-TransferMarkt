@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Player Comparison - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Player Comparison</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Select Players</h5>
+                    <form method="get" class="mb-3">
+                        <div class="mb-3">
+                            <label for="player1" class="form-label">Player 1</label>
+                            <select class="form-select" id="player1" name="player1">
+                                <option value="">Select Player 1</option>
+                                {% for player in players %}
+                                <option value="{{ player.id }}" {% if player1 and player1.id == player.id %}selected{% endif %}>
+                                    {{ player.name }} ({{ player.team.name if player.team else 'Free Agent' }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="player2" class="form-label">Player 2</label>
+                            <select class="form-select" id="player2" name="player2">
+                                <option value="">Select Player 2</option>
+                                {% for player in players %}
+                                <option value="{{ player.id }}" {% if player2 and player2.id == player.id %}selected{% endif %}>
+                                    {{ player.name }} ({{ player.team.name if player.team else 'Free Agent' }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Compare</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if player1 or player2 %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Player 1 Statistics</h5>
+                    {% if player1 %}
+                    <div class="player-stats">
+                        <p><strong>Team:</strong> {{ player1.team.name if player1.team else 'Free Agent' }}</p>
+                        <p><strong>Role:</strong> {{ player1.role }}</p>
+                        <p><strong>Nationality:</strong> {{ player1.nationality }}</p>
+                        <p><strong>Matches Played:</strong> {{ player1_stats.matches }}</p>
+                        <p><strong>Runs Scored:</strong> {{ player1_stats.runs }}</p>
+                        <p><strong>Batting Average:</strong> {{ player1_stats.batting_avg }}</p>
+                        <p><strong>Strike Rate:</strong> {{ player1_stats.strike_rate }}</p>
+                        <p><strong>Wickets Taken:</strong> {{ player1_stats.wickets }}</p>
+                        <p><strong>Bowling Average:</strong> {{ player1_stats.bowling_avg }}</p>
+                        <p><strong>Economy Rate:</strong> {{ player1_stats.economy }}</p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Select Player 1 to view statistics</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Player 2 Statistics</h5>
+                    {% if player2 %}
+                    <div class="player-stats">
+                        <p><strong>Team:</strong> {{ player2.team.name if player2.team else 'Free Agent' }}</p>
+                        <p><strong>Role:</strong> {{ player2.role }}</p>
+                        <p><strong>Nationality:</strong> {{ player2.nationality }}</p>
+                        <p><strong>Matches Played:</strong> {{ player2_stats.matches }}</p>
+                        <p><strong>Runs Scored:</strong> {{ player2_stats.runs }}</p>
+                        <p><strong>Batting Average:</strong> {{ player2_stats.batting_avg }}</p>
+                        <p><strong>Strike Rate:</strong> {{ player2_stats.strike_rate }}</p>
+                        <p><strong>Wickets Taken:</strong> {{ player2_stats.wickets }}</p>
+                        <p><strong>Bowling Average:</strong> {{ player2_stats.bowling_avg }}</p>
+                        <p><strong>Economy Rate:</strong> {{ player2_stats.economy }}</p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Select Player 2 to view statistics</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if player1 and player2 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Batting Performance Comparison</h5>
+                    <canvas id="battingChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Bowling Performance Comparison</h5>
+                    <canvas id="bowlingChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if player1 and player2 %}
+    // Batting Performance Chart
+    const battingCtx = document.getElementById('battingChart').getContext('2d');
+    new Chart(battingCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Runs', 'Batting Average', 'Strike Rate'],
+            datasets: [{
+                label: '{{ player1.name }}',
+                data: [
+                    {{ player1_stats.runs }},
+                    {{ player1_stats.batting_avg }},
+                    {{ player1_stats.strike_rate }}
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }, {
+                label: '{{ player2.name }}',
+                data: [
+                    {{ player2_stats.runs }},
+                    {{ player2_stats.batting_avg }},
+                    {{ player2_stats.strike_rate }}
+                ],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Bowling Performance Chart
+    const bowlingCtx = document.getElementById('bowlingChart').getContext('2d');
+    new Chart(bowlingCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Wickets', 'Bowling Average', 'Economy Rate'],
+            datasets: [{
+                label: '{{ player1.name }}',
+                data: [
+                    {{ player1_stats.wickets }},
+                    {{ player1_stats.bowling_avg }},
+                    {{ player1_stats.economy }}
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }, {
+                label: '{{ player2.name }}',
+                data: [
+                    {{ player2_stats.wickets }},
+                    {{ player2_stats.bowling_avg }},
+                    {{ player2_stats.economy }}
+                ],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %} 

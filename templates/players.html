@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Players - IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Players</h1>
+    <div class="row">
+        {% if players %}
+            {% for player in players %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ player.name }}</h5>
+                        <p class="card-text">
+                            <strong>Team:</strong> {{ player.team }}<br>
+                            <strong>Role:</strong> {{ player.role }}<br>
+                            <strong>Batting Style:</strong> {{ player.batting_style }}<br>
+                            <strong>Bowling Style:</strong> {{ player.bowling_style }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">No players found.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}IPL Analytics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="jumbotron">
+                <h1 class="display-4">Welcome to IPL Analytics</h1>
+                <p class="lead">Explore comprehensive statistics and analysis of IPL matches, players, and teams.</p>
+                <hr class="my-4">
+                <p>Get insights into player performances, team statistics, and match outcomes.</p>
+                <a class="btn btn-primary btn-lg" href="{{ url_for('main_bp.teams') }}" role="button">Explore Teams</a>
+                <a class="btn btn-primary btn-lg" href="{{ url_for('main_bp.players') }}" role="button">View Players</a>
+                <a class="btn btn-primary btn-lg" href="{{ url_for('main_bp.compare') }}" role="button">Compare</a>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+
+    
+{% endblock %} 
